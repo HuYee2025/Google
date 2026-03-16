@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrandGPT - 品牌从0到1咨询顾问</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass-morphism { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .chat-container { height: calc(100vh - 200px); }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .loading-shimmer { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+</head>
+<body class="text-slate-900">
+
+<div id="app" class="max-w-5xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">BrandGPT 顾问模式</h1>
+            <p class="text-slate-500 mt-1">品牌从0到1深度诊断与定位梳理</p>
+        </div>
+        <div class="flex space-x-3">
+            <button id="aiDeepAnalysisBtn" class="hidden px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:opacity-90 transition flex items-center gap-2 shadow-lg">
+                ✨ AI 深度分析报告
+            </button>
+            <button id="exportPPTBtn" class="hidden px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition flex items-center gap-2">
+                <i data-lucide="presentation"></i> 生成PPT大纲
+            </button>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Sidebar: Progress -->
+        <div class="md:col-span-1 space-y-4">
+            <div class="glass-morphism p-6 rounded-2xl shadow-sm">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="bar-chart-3" class="text-blue-500"></i> 咨询进度
+                </h3>
+                <div class="space-y-4" id="progressList">
+                    <div class="progress-step flex items-center gap-3 text-blue-600 font-medium">
+                        <div class="step-icon w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs">1</div>
+                        <span>产品与赛道初探</span>
+                    </div>
+                    <div class="progress-step flex items-center gap-3 text-slate-400">
+                        <div class="step-icon w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs">2</div>
+                        <span>团队基因与资源</span>
+                    </div>
+                    <div class="progress-step flex items-center gap-3 text-slate-400">
+                        <div class="step-icon w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs">3</div>
+                        <span>核心用户画像</span>
+                    </div>
+                    <div class="progress-step flex items-center gap-3 text-slate-400">
+                        <div class="step-icon w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs">4</div>
+                        <span>差异化定位与定价</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                <h4 class="text-indigo-900 font-semibold mb-2">顾问提示</h4>
+                <p id="advisorHint" class="text-indigo-700 text-sm leading-relaxed">请尽可能详细地描述你的想法。没有错误的答案，只有未被发现的视角。</p>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="md:col-span-2 flex flex-col glass-morphism rounded-2xl shadow-lg overflow-hidden">
+            <div id="chatBox" class="chat-container overflow-y-auto p-6 space-y-6">
+                <div class="flex gap-4 fade-in">
+                    <div class="w-10 h-10 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-white">
+                        <i data-lucide="user-check"></i>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm max-w-[85%]">
+                        <p class="text-slate-800 leading-relaxed">
+                            你好，创始人！我是你的品牌顾问。在开始之前，我们需要先“对齐”一下。
+                            <br><br>
+                            <b>第一步，请告诉我：</b><br>
+                            你准备切入的具体细分市场是什么？你观察到了这个行业目前的哪些痛点，或者有哪些未被满足的需求？
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 border-t border-slate-100 bg-white">
+                <div class="mb-2 flex justify-end">
+                    <button id="polishBtn" class="text-xs px-2 py-1 bg-purple-50 text-purple-600 rounded-md border border-purple-100 hover:bg-purple-100 transition flex items-center gap-1">
+                        ✨ 智能润色表达
+                    </button>
+                </div>
+                <div class="flex gap-3">
+                    <textarea id="userInput" rows="2" class="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none" placeholder="在此输入你的回答..."></textarea>
+                    <button id="sendBtn" class="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition self-end h-12">
+                        发送
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Report Section (Initially Hidden) -->
+    <div id="reportSection" class="hidden mt-12 bg-white p-10 rounded-3xl shadow-2xl border border-slate-100 fade-in">
+        <div class="flex justify-between items-start mb-10">
+            <div>
+                <h2 class="text-4xl font-bold text-slate-900">✨ AI 品牌战略深度白皮书</h2>
+                <p class="text-slate-500 mt-2">由 Gemini 2.5 分析生成的深度品牌定位建议</p>
+            </div>
+            <div class="flex gap-4">
+                <button id="generateLogoBtn" class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition flex items-center gap-2 shadow-md">
+                    ✨ 生成品牌Logo视觉创意
+                </button>
+                <button id="voiceManifestoBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-md">
+                    ✨ 播放品牌宣言语音
+                </button>
+            </div>
+        </div>
+        
+        <div id="aiAnalysisLoader" class="hidden space-y-4 mb-8">
+            <div class="h-8 w-1/3 loading-shimmer rounded"></div>
+            <div class="h-32 w-full loading-shimmer rounded"></div>
+            <div class="h-32 w-full loading-shimmer rounded"></div>
+        </div>
+
+        <div id="reportContent" class="prose prose-slate max-w-none">
+            <!-- AI Generated Content -->
+        </div>
+
+        <div id="visualSection" class="mt-10 hidden border-t pt-10">
+            <h3 class="text-2xl font-bold mb-6">品牌视觉创意概念</h3>
+            <div id="logoContainer" class="flex justify-center bg-slate-50 rounded-2xl p-8 min-h-[300px] items-center">
+                <p class="text-slate-400">点击上方按钮生成视觉创意...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const apiKey = ""; // API key will be injected at runtime
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const progressList = document.getElementById('progressList');
+    const aiDeepAnalysisBtn = document.getElementById('aiDeepAnalysisBtn');
+    const exportPPTBtn = document.getElementById('exportPPTBtn');
+    const polishBtn = document.getElementById('polishBtn');
+    const generateLogoBtn = document.getElementById('generateLogoBtn');
+    const voiceManifestoBtn = document.getElementById('voiceManifestoBtn');
+
+    let currentStep = 0;
+    const sessionData = {
+        market: "",
+        team: "",
+        user: "",
+        strategy: ""
+    };
+
+    const questions = [
+        "针对这个市场痛点，你们的产品是如何解决它的？请描述一下核心功能或体验。此外，在这个赛道中，目前有哪些你比较关注的竞争对手？",
+        "太棒了。接下来聊聊你们自己。创始团队的核心背景是什么？你们目前掌握了哪些竞争对手短时间内难以复制的资源（技术、供应链、渠道、或是某种深度洞察）？",
+        "理解了团队的优势。现在我们需要精准定位受众。谁最应该成为你们的“种子用户”？请试着描述一个典型用户的画像：他的年龄、生活状态以及在什么场景下会疯狂想念你的产品？",
+        "最后，关于商业的“分寸感”。你希望用户如何看待你们的定价？是追求极致性价比的‘平替’，还是能提供溢价体验的‘专家’？你希望品牌给人的初印象（性格标签）是什么？"
+    ];
+
+    // --- Gemini API Utilities ---
+    
+    async function callGemini(prompt, systemInstruction = "") {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        const payload = {
+            contents: [{ parts: [{ text: prompt }] }],
+            systemInstruction: { parts: [{ text: systemInstruction }] }
+        };
+
+        for (let i = 0; i < 5; i++) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text;
+            } catch (err) {
+                await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+            }
+        }
+        throw new Error("API 调用失败");
+    }
+
+    async function generateImage(promptText) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+        const payload = {
+            instances: { prompt: promptText },
+            parameters: { sampleCount: 1 }
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+    }
+
+    async function playTTS(text) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+        const payload = {
+            contents: [{ parts: [{ text: `用坚定而富有感染力的商业精英语气说：${text}` }] }],
+            generationConfig: {
+                responseModalities: ["AUDIO"],
+                speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+            }
+        };
+        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await response.json();
+        const pcmData = data.candidates[0].content.parts[0].inlineData.data;
+        
+        // Simplified PCM to WAV conversion for demonstration (Standard logic needed in production)
+        const audioBlob = b64toBlob(pcmData, 'audio/L16');
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audio.play();
+    }
+
+    function b64toBlob(b64Data, contentType = '', sliceSize = 512) {
+        const byteCharacters = atob(b64Data);
+        const byteArrays = [];
+        for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) { byteNumbers[i] = slice.charCodeAt(i); }
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+        return new Blob(byteArrays, { type: contentType });
+    }
+
+    // --- App Logic ---
+
+    function appendMessage(role, text) {
+        const div = document.createElement('div');
+        div.className = `flex gap-4 fade-in ${role === 'user' ? 'flex-row-reverse' : ''}`;
+        const iconName = role === 'ai' ? 'user-check' : 'user';
+        const bgColor = role === 'ai' ? 'bg-blue-600' : 'bg-slate-800';
+        div.innerHTML = `
+            <div class="w-10 h-10 rounded-full ${bgColor} flex-shrink-0 flex items-center justify-center text-white">
+                <i data-lucide="${iconName}"></i>
+            </div>
+            <div class="${role === 'user' ? 'bg-blue-50 text-slate-800' : 'bg-white text-slate-800'} p-4 rounded-2xl ${role === 'ai' ? 'rounded-tl-none' : 'rounded-tr-none'} border border-slate-100 shadow-sm max-w-[85%]">
+                <p class="leading-relaxed">${text.replace(/\n/g, '<br>')}</p>
+            </div>
+        `;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        lucide.createIcons();
+    }
+
+    function updateProgress() {
+        const steps = progressList.querySelectorAll('.progress-step');
+        steps.forEach((step, index) => {
+            const icon = step.querySelector('.step-icon');
+            if (!icon) return;
+            if (index <= currentStep) {
+                step.classList.remove('text-slate-400');
+                step.classList.add('text-blue-600', 'font-medium');
+                icon.classList.remove('bg-slate-100');
+                icon.classList.add('bg-blue-100');
+            }
+        });
+    }
+
+    async function handleSend() {
+        const val = userInput.value.trim();
+        if (!val) return;
+        appendMessage('user', val);
+        userInput.value = "";
+        const keys = Object.keys(sessionData);
+        sessionData[keys[currentStep]] = val;
+        if (currentStep < questions.length) {
+            setTimeout(() => {
+                appendMessage('ai', `收到。这就引出了我的下一个关键提问：\n\n${questions[currentStep]}`);
+                currentStep++;
+                updateProgress();
+            }, 800);
+        } else {
+            finishConsultation();
+        }
+    }
+
+    function finishConsultation() {
+        appendMessage('ai', "咨询环节圆满结束！基于我们的深度沟通，我正在为你准备<b>✨ AI 深度分析报告</b>。请点击右上角按钮生成。");
+        aiDeepAnalysisBtn.classList.remove('hidden');
+        exportPPTBtn.classList.remove('hidden');
+    }
+
+    // --- AI Features Implementation ---
+
+    polishBtn.onclick = async () => {
+        const text = userInput.value.trim();
+        if (!text) return;
+        polishBtn.disabled = true;
+        polishBtn.innerText = "✨ 润色中...";
+        try {
+            const polished = await callGemini(`用户当前的回答是：'${text}'。请将其润色为更专业、更有商业逻辑的表达，保持意思不变，字数控制在200字以内。只需返回润色后的文本。`);
+            userInput.value = polished.trim();
+        } catch (e) {
+            console.error(e);
+        } finally {
+            polishBtn.disabled = false;
+            polishBtn.innerText = "✨ 智能润色表达";
+        }
+    };
+
+    aiDeepAnalysisBtn.onclick = async () => {
+        const reportSection = document.getElementById('reportSection');
+        const loader = document.getElementById('aiAnalysisLoader');
+        const content = document.getElementById('reportContent');
+        reportSection.classList.remove('hidden');
+        loader.classList.remove('hidden');
+        content.innerHTML = "";
+        reportSection.scrollIntoView({ behavior: 'smooth' });
+
+        const prompt = `
+            基于以下创业信息，生成一份专业的品牌定位白皮书：
+            1. 市场与痛点：${sessionData.market}
+            2. 团队优势：${sessionData.team}
+            3. 目标客群：${sessionData.user}
+            4. 定价与性格：${sessionData.strategy}
+            要求：分四个章节：市场洞察、竞争壁垒、用户心智、战略愿景。使用专业顾问语感，排版清晰（Markdown格式）。
+        `;
+
+        try {
+            const analysis = await callGemini(prompt, "你是一个拥有20年经验的顶级品牌战略专家，擅长从0到1的市场定位。");
+            loader.classList.add('hidden');
+            // Basic markdown-like parser for the UI
+            content.innerHTML = analysis.replace(/### (.*)/g, '<h3 class="text-xl font-bold mt-6 mb-2 text-indigo-700">$1</h3>')
+                                        .replace(/\n\n/g, '<br><br>');
+        } catch (e) {
+            loader.innerText = "生成失败，请重试。";
+        }
+    };
+
+    generateLogoBtn.onclick = async () => {
+        const container = document.getElementById('logoContainer');
+        document.getElementById('visualSection').classList.remove('hidden');
+        container.innerHTML = '<div class="flex flex-col items-center gap-4"><div class="w-12 h-12 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin"></div><p>✨ 正在构思品牌视觉...</p></div>';
+        
+        try {
+            const visualPrompt = await callGemini(`基于品牌描述：'${sessionData.market}' 和定位 '${sessionData.strategy}'，生成一个用于 AI 画图模型的提示词。要求：极简、现代、高端的 Logo 概念。只需返回英文提示词。`);
+            const imgUrl = await generateImage(visualPrompt);
+            container.innerHTML = `<img src="${imgUrl}" class="max-w-md rounded-xl shadow-2xl border-8 border-white">`;
+        } catch (e) {
+            container.innerHTML = "视觉生成失败，请稍后重试。";
+        }
+    };
+
+    voiceManifestoBtn.onclick = async () => {
+        voiceManifestoBtn.disabled = true;
+        const originalText = voiceManifestoBtn.innerText;
+        voiceManifestoBtn.innerText = "✨ 声音合成中...";
+        try {
+            const manifesto = await callGemini(`为这个品牌写一段30字左右的坚定愿景宣言：市场 '${sessionData.market}'，策略 '${sessionData.strategy}'。只需返回宣言文本。`);
+            await playTTS(manifesto);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            voiceManifestoBtn.disabled = false;
+            voiceManifestoBtn.innerText = originalText;
+        }
+    };
+
+    sendBtn.addEventListener('click', handleSend);
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    });
+
+</script>
+</body>
+</html>
